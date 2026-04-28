@@ -160,7 +160,7 @@ export function ActivityCatalogue({
             min="0"
             name="age"
             onChange={(event) => updateDebounced("age", event.target.value)}
-            placeholder="8"
+            placeholder="-"
             type="number"
           />
         </label>
@@ -172,7 +172,7 @@ export function ActivityCatalogue({
             min="0"
             name="maxPrice"
             onChange={(event) => updateDebounced("maxPrice", event.target.value)}
-            placeholder="250"
+            placeholder="-"
             type="number"
           />
         </label>
