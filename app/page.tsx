@@ -1,11 +1,24 @@
-export default function Home() {
+import { ActivityCatalogue } from "../components/activity-catalogue";
+import { getActivities } from "../lib/activities";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const activities = await getActivities();
+
   return (
-    <main className="page">
-      <section className="panel" aria-label="NirKono hello world">
-        <p className="eyebrow">NirKono</p>
-        <h1>Hello World</h1>
-        <p className="status">Online and ready for the next instruction.</p>
+    <main className="app-shell">
+      <section className="intro" aria-labelledby="page-title">
+        <div>
+          <p className="eyebrow">NirKono Activities</p>
+          <h1 id="page-title">Find the next class, club, or weekend spark.</h1>
+        </div>
+        <p className="intro-copy">
+          Browse age-friendly activities by style, location, instructor, price, and fit.
+        </p>
       </section>
+
+      <ActivityCatalogue activities={activities} />
     </main>
   );
 }

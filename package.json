@@ -9,6 +9,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "db:seed": "node scripts/seed-activities.mjs",
     "lint": "eslint"
   },
   "dependencies": {
