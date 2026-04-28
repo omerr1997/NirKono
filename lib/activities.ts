@@ -14,6 +14,7 @@ export type Activity = {
   maxAge: number;
   gender: string;
   image: string;
+  description: string;
 };
 
 export type ActivityFilters = {
@@ -53,6 +54,7 @@ type ActivityRow = {
   max_age: number;
   gender: string;
   image: string;
+  description: string;
 };
 
 type CountRow = {
@@ -76,7 +78,8 @@ const selectFields = `
   min_age,
   max_age,
   gender,
-  image
+  image,
+  description
 `;
 
 function getConnectionString() {
@@ -119,6 +122,7 @@ function buildWhere(filters: ActivityFilters) {
       OR location ILIKE ${placeholder}
       OR genre ILIKE ${placeholder}
       OR instructor ILIKE ${placeholder}
+      OR description ILIKE ${placeholder}
     )`);
   }
 
@@ -161,8 +165,29 @@ function mapActivity(activity: ActivityRow): Activity {
     minAge: activity.min_age,
     maxAge: activity.max_age,
     gender: activity.gender,
-    image: activity.image
+    image: activity.image,
+    description: activity.description
   };
+}
+
+export async function getActivityById(id: number): Promise<Activity | null> {
+  const sql = getSql();
+
+  if (!sql) {
+    return null;
+  }
+
+  const rows = (await sql.query(
+    `
+      SELECT ${selectFields}
+      FROM activities
+      WHERE id = $1
+      LIMIT 1
+    `,
+    [id]
+  )) as ActivityRow[];
+
+  return rows[0] ? mapActivity(rows[0]) : null;
 }
 
 export async function getActivityFacets(): Promise<ActivityFacets> {

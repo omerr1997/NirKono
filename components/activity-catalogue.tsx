@@ -84,6 +84,7 @@ export function ActivityCatalogue({
       .filter((page) => page >= 1 && page <= totalPages)
       .sort((a, b) => a - b);
   }, [filters.page, totalPages]);
+  const currentQuery = searchParams.toString();
 
   return (
     <section className="catalogue" aria-label="קטלוג פעילויות">
@@ -184,7 +185,12 @@ export function ActivityCatalogue({
         <>
           <div className="activity-grid">
             {activities.map((activity) => (
-              <article className="activity-card" key={activity.id}>
+              <Link
+                aria-label={`פתיחת הפעילות ${activity.name}`}
+                className="activity-card"
+                href={`/activities/${activity.id}${currentQuery ? `?${currentQuery}` : ""}`}
+                key={activity.id}
+              >
                 <div className="activity-image-wrap">
                   <Image
                     src={activity.image}
@@ -225,7 +231,7 @@ export function ActivityCatalogue({
                     </div>
                   </dl>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
 
