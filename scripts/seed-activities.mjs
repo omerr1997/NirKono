@@ -35,164 +35,145 @@ if (!connectionString) {
 
 const sql = neon(connectionString);
 
-const activities = [
-  {
-    name: "Junior Parkour Lab",
-    location: "Tel Aviv Port",
-    genre: "Sport",
-    date: "2026-05-10",
-    instructor: "Noam Levi",
-    price: 42,
-    minAge: 8,
-    maxAge: 13,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Clay Studio Morning",
-    location: "Florentin",
-    genre: "Art",
-    date: "2026-05-12",
-    instructor: "Maya Cohen",
-    price: 55,
-    minAge: 6,
-    maxAge: 12,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1493106819501-66d381c466f1?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Robotics Builders Club",
-    location: "Ramat Gan",
-    genre: "STEM",
-    date: "2026-05-18",
-    instructor: "Daniel Barak",
-    price: 72,
-    minAge: 10,
-    maxAge: 15,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Contemporary Dance Flow",
-    location: "Jaffa",
-    genre: "Dance",
-    date: "2026-05-20",
-    instructor: "Tamar Ezra",
-    price: 48,
-    minAge: 9,
-    maxAge: 16,
-    gender: "Girls",
-    image:
-      "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Beach Volleyball Skills",
-    location: "Herzliya Beach",
-    genre: "Sport",
-    date: "2026-05-24",
-    instructor: "Ari Shaked",
-    price: 38,
-    minAge: 11,
-    maxAge: 17,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Kids Cooking Market",
-    location: "Sarona",
-    genre: "Cooking",
-    date: "2026-06-02",
-    instructor: "Lior Mizrahi",
-    price: 64,
-    minAge: 7,
-    maxAge: 13,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Digital Illustration Jam",
-    location: "Givatayim",
-    genre: "Art",
-    date: "2026-06-06",
-    instructor: "Shira Tal",
-    price: 58,
-    minAge: 12,
-    maxAge: 18,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Chess Strategy Sprint",
-    location: "Dizengoff Center",
-    genre: "Mind",
-    date: "2026-06-11",
-    instructor: "Eitan Weiss",
-    price: 35,
-    minAge: 8,
-    maxAge: 14,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Skateboard Basics",
-    location: "Yarkon Park",
-    genre: "Sport",
-    date: "2026-06-16",
-    instructor: "Omer Azulay",
-    price: 46,
-    minAge: 9,
-    maxAge: 15,
-    gender: "Boys",
-    image:
-      "https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Theatre Improv Circle",
-    location: "Habima",
-    genre: "Theatre",
-    date: "2026-06-22",
-    instructor: "Yael Romano",
-    price: 52,
-    minAge: 10,
-    maxAge: 17,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Beginner Guitar Camp",
-    location: "North Tel Aviv",
-    genre: "Music",
-    date: "2026-07-01",
-    instructor: "Ronen Sela",
-    price: 68,
-    minAge: 9,
-    maxAge: 16,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=1200&q=80"
-  },
-  {
-    name: "Nature Photography Walk",
-    location: "Ramat HaSharon",
-    genre: "Photography",
-    date: "2026-07-08",
-    instructor: "Neta Amir",
-    price: 44,
-    minAge: 12,
-    maxAge: 18,
-    gender: "All",
-    image:
-      "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=1200&q=80"
-  }
+const images = [
+  "https://images.unsplash.com/photo-1526676037777-05a232554f77?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1493106819501-66d381c466f1?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1520045892732-304bc3ac5d8e?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1503095396549-807759245b35?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=1200&q=80",
+  "https://images.unsplash.com/photo-1452587925148-ce544e77e70d?auto=format&fit=crop&w=1200&q=80"
 ];
+
+const childBlueprints = [
+  { title: "חוג כדורגל יסודות", genre: "ספורט", minAge: 6, maxAge: 10, price: 140, gender: "כולם" },
+  { title: "נבחרת כדורסל צעירה", genre: "ספורט", minAge: 9, maxAge: 14, price: 165, gender: "כולם" },
+  { title: "פארקור בטוח לילדים", genre: "ספורט", minAge: 8, maxAge: 13, price: 155, gender: "כולם" },
+  { title: "יוגה ותנועה לילדים", genre: "תנועה", minAge: 5, maxAge: 9, price: 120, gender: "כולם" },
+  { title: "בלט יצירתי", genre: "ריקוד", minAge: 5, maxAge: 8, price: 145, gender: "בנות" },
+  { title: "היפ הופ לנוער", genre: "ריקוד", minAge: 11, maxAge: 17, price: 170, gender: "כולם" },
+  { title: "רובוטיקה ולגו הנדסי", genre: "מדע וטכנולוגיה", minAge: 7, maxAge: 12, price: 210, gender: "כולם" },
+  { title: "תכנות משחקים", genre: "מדע וטכנולוגיה", minAge: 10, maxAge: 15, price: 240, gender: "כולם" },
+  { title: "סדנת קומיקס ואיור", genre: "אמנות", minAge: 8, maxAge: 14, price: 150, gender: "כולם" },
+  { title: "קרמיקה צבעונית", genre: "אמנות", minAge: 6, maxAge: 12, price: 135, gender: "כולם" },
+  { title: "תיאטרון ואימפרוביזציה", genre: "תיאטרון", minAge: 9, maxAge: 16, price: 160, gender: "כולם" },
+  { title: "גיטרה למתחילים", genre: "מוזיקה", minAge: 9, maxAge: 18, price: 190, gender: "כולם" },
+  { title: "פסנתר בקבוצות קטנות", genre: "מוזיקה", minAge: 7, maxAge: 13, price: 220, gender: "כולם" },
+  { title: "בישול ואפייה צעירה", genre: "בישול", minAge: 7, maxAge: 13, price: 175, gender: "כולם" },
+  { title: "שחמט וחשיבה אסטרטגית", genre: "חשיבה", minAge: 8, maxAge: 16, price: 125, gender: "כולם" },
+  { title: "צילום בסמארטפון", genre: "צילום", minAge: 12, maxAge: 18, price: 155, gender: "כולם" },
+  { title: "אנגלית דרך משחק", genre: "למידה", minAge: 6, maxAge: 10, price: 130, gender: "כולם" },
+  { title: "ספרדית לילדים סקרנים", genre: "למידה", minAge: 9, maxAge: 14, price: 145, gender: "כולם" },
+  { title: "מדענים צעירים במעבדה", genre: "מדע וטכנולוגיה", minAge: 8, maxAge: 13, price: 205, gender: "כולם" },
+  { title: "סקייטבורד בסיסי", genre: "ספורט", minAge: 9, maxAge: 15, price: 150, gender: "בנים" },
+  { title: "כדורעף חופים לנוער", genre: "ספורט", minAge: 12, maxAge: 18, price: 155, gender: "כולם" },
+  { title: "אקרובטיקה על מזרנים", genre: "תנועה", minAge: 6, maxAge: 11, price: 150, gender: "כולם" },
+  { title: "עיצוב אופנה לנוער", genre: "אמנות", minAge: 12, maxAge: 18, price: 185, gender: "בנות" },
+  { title: "פיתוח אפליקציות לנוער", genre: "מדע וטכנולוגיה", minAge: 13, maxAge: 18, price: 260, gender: "כולם" }
+];
+
+const adultBlueprints = [
+  { title: "פילאטיס ערב למבוגרים", genre: "תנועה", minAge: 18, maxAge: 65, price: 180, gender: "כולם" },
+  { title: "ציור אקריליק למתחילים", genre: "אמנות", minAge: 18, maxAge: 65, price: 210, gender: "כולם" },
+  { title: "בישול ים תיכוני", genre: "בישול", minAge: 18, maxAge: 65, price: 260, gender: "כולם" },
+  { title: "צילום אורבני למבוגרים", genre: "צילום", minAge: 18, maxAge: 65, price: 220, gender: "כולם" },
+  { title: "יוגה לנשים", genre: "תנועה", minAge: 18, maxAge: 65, price: 170, gender: "נשים" },
+  { title: "ריצה מודרכת למתחילים", genre: "ספורט", minAge: 18, maxAge: 60, price: 130, gender: "כולם" },
+  { title: "גיטרה סביב המדורה", genre: "מוזיקה", minAge: 18, maxAge: 65, price: 190, gender: "כולם" },
+  { title: "שחמט למבוגרים", genre: "חשיבה", minAge: 18, maxAge: 65, price: 120, gender: "כולם" }
+];
+
+const locations = [
+  "תל אביב - נמל",
+  "תל אביב - פלורנטין",
+  "יפו",
+  "רמת גן",
+  "גבעתיים",
+  "הרצליה",
+  "רעננה",
+  "כפר סבא",
+  "חולון",
+  "בת ים",
+  "ראשון לציון",
+  "פתח תקווה",
+  "רמת השרון",
+  "מודיעין",
+  "ירושלים",
+  "חיפה"
+];
+
+const instructors = [
+  "יעל כהן",
+  "דניאל לוי",
+  "נועה ברק",
+  "איתי שקד",
+  "מאיה מזרחי",
+  "עומר אזולאי",
+  "שירה טל",
+  "רוני סלע",
+  "תמר עזרא",
+  "אורי וויס",
+  "נטע אמיר",
+  "ליאור רומנו",
+  "איילת דרור",
+  "יונתן פרץ",
+  "מיכל סגל",
+  "רועי אלון"
+];
+
+const groups = ["א", "ב", "ג", "ד", "ה"];
+
+function addDays(date, days) {
+  const next = new Date(date);
+  next.setUTCDate(next.getUTCDate() + days);
+  return next.toISOString().slice(0, 10);
+}
+
+function buildActivities() {
+  const activities = [];
+  const startDate = new Date("2026-05-03T00:00:00.000Z");
+
+  for (let index = 0; index < 96; index += 1) {
+    const blueprint = childBlueprints[index % childBlueprints.length];
+    activities.push({
+      name: `${blueprint.title} - קבוצה ${groups[index % groups.length]}`,
+      location: locations[index % locations.length],
+      genre: blueprint.genre,
+      date: addDays(startDate, index * 2),
+      instructor: instructors[index % instructors.length],
+      price: blueprint.price + (index % 5) * 10,
+      minAge: blueprint.minAge,
+      maxAge: blueprint.maxAge,
+      gender: blueprint.gender,
+      image: images[index % images.length]
+    });
+  }
+
+  for (let index = 0; index < 24; index += 1) {
+    const blueprint = adultBlueprints[index % adultBlueprints.length];
+    activities.push({
+      name: `${blueprint.title} - מחזור ${groups[index % groups.length]}`,
+      location: locations[(index * 3) % locations.length],
+      genre: blueprint.genre,
+      date: addDays(startDate, 7 + index * 4),
+      instructor: instructors[(index * 2) % instructors.length],
+      price: blueprint.price + (index % 4) * 15,
+      minAge: blueprint.minAge,
+      maxAge: blueprint.maxAge,
+      gender: blueprint.gender,
+      image: images[(index + 4) % images.length]
+    });
+  }
+
+  return activities;
+}
+
+const activities = buildActivities();
 
 await sql`
   CREATE TABLE IF NOT EXISTS activities (
@@ -241,4 +222,12 @@ for (const activity of activities) {
   `;
 }
 
-console.log(`Seeded ${activities.length} activities.`);
+await sql`CREATE INDEX IF NOT EXISTS activities_genre_idx ON activities (genre)`;
+await sql`CREATE INDEX IF NOT EXISTS activities_location_idx ON activities (location)`;
+await sql`CREATE INDEX IF NOT EXISTS activities_gender_idx ON activities (gender)`;
+await sql`CREATE INDEX IF NOT EXISTS activities_price_idx ON activities (price)`;
+await sql`CREATE INDEX IF NOT EXISTS activities_date_idx ON activities (activity_date)`;
+await sql`CREATE INDEX IF NOT EXISTS activities_age_range_idx ON activities (min_age, max_age)`;
+await sql`CREATE INDEX IF NOT EXISTS activities_filter_combo_idx ON activities (genre, location, gender)`;
+
+console.log(`Seeded ${activities.length} Hebrew activities.`);

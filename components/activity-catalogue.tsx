@@ -1,212 +1,268 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import Image from "next/image";
-import type { Activity } from "../lib/activities";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useRef, useTransition } from "react";
+import type { Activity, ActivityFacets, ActivityFilters } from "../lib/activities";
 
 type ActivityCatalogueProps = {
   activities: Activity[];
+  facets: ActivityFacets;
+  filters: ActivityFilters;
+  total: number;
+  totalPages: number;
 };
 
-const moneyFormatter = new Intl.NumberFormat("en-US", {
+const moneyFormatter = new Intl.NumberFormat("he-IL", {
   style: "currency",
-  currency: "USD",
+  currency: "ILS",
   maximumFractionDigits: 0
 });
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
+const dateFormatter = new Intl.DateTimeFormat("he-IL", {
   month: "short",
   day: "numeric",
   year: "numeric"
 });
 
-function uniqueValues(activities: Activity[], key: keyof Activity) {
-  return Array.from(new Set(activities.map((activity) => String(activity[key])))).sort();
+function getFilterValue(value: string | number | undefined) {
+  return value === undefined ? "" : String(value);
 }
 
-export function ActivityCatalogue({ activities }: ActivityCatalogueProps) {
-  const [search, setSearch] = useState("");
-  const [genre, setGenre] = useState("All");
-  const [location, setLocation] = useState("All");
-  const [gender, setGender] = useState("All");
-  const [age, setAge] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
+export function ActivityCatalogue({
+  activities,
+  facets,
+  filters,
+  total,
+  totalPages
+}: ActivityCatalogueProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+  const searchTimeout = useRef<number | null>(null);
 
-  const genres = useMemo(() => uniqueValues(activities, "genre"), [activities]);
-  const locations = useMemo(() => uniqueValues(activities, "location"), [activities]);
-  const genders = useMemo(() => uniqueValues(activities, "gender"), [activities]);
+  function createQuery(updates: Record<string, string>) {
+    const params = new URLSearchParams(searchParams.toString());
 
-  const filteredActivities = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
-    const requestedAge = age === "" ? null : Number(age);
-    const requestedMaxPrice = maxPrice === "" ? null : Number(maxPrice);
+    for (const [key, value] of Object.entries(updates)) {
+      if (value === "" || value === "all") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
+    }
 
-    return activities.filter((activity) => {
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        [activity.name, activity.location, activity.genre, activity.instructor]
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedSearch);
-      const matchesGenre = genre === "All" || activity.genre === genre;
-      const matchesLocation = location === "All" || activity.location === location;
-      const matchesGender = gender === "All" || activity.gender === gender;
-      const matchesAge =
-        requestedAge === null ||
-        (activity.minAge <= requestedAge && requestedAge <= activity.maxAge);
-      const matchesPrice = requestedMaxPrice === null || activity.price <= requestedMaxPrice;
+    if (!("page" in updates)) {
+      params.delete("page");
+    }
 
-      return (
-        matchesSearch &&
-        matchesGenre &&
-        matchesLocation &&
-        matchesGender &&
-        matchesAge &&
-        matchesPrice
-      );
-    });
-  }, [activities, age, gender, genre, location, maxPrice, search]);
-
-  function resetFilters() {
-    setSearch("");
-    setGenre("All");
-    setLocation("All");
-    setGender("All");
-    setAge("");
-    setMaxPrice("");
+    const query = params.toString();
+    return query ? `${pathname}?${query}` : pathname;
   }
 
+  function updateFilter(key: string, value: string) {
+    startTransition(() => {
+      router.push(createQuery({ [key]: value }));
+    });
+  }
+
+  function updateSearch(value: string) {
+    if (searchTimeout.current) {
+      window.clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = window.setTimeout(() => {
+      updateFilter("q", value);
+    }, 350);
+  }
+
+  const pagination = useMemo(() => {
+    const pages = new Set<number>([1, totalPages, filters.page - 1, filters.page, filters.page + 1]);
+    return Array.from(pages)
+      .filter((page) => page >= 1 && page <= totalPages)
+      .sort((a, b) => a - b);
+  }, [filters.page, totalPages]);
+
   return (
-    <section className="catalogue" aria-label="Activities catalogue">
-      <div className="filters" aria-label="Activity filters">
+    <section className="catalogue" aria-label="קטלוג פעילויות">
+      <div className="filters" aria-label="מסנני פעילויות" aria-busy={isPending}>
         <label className="filter-field filter-field-wide">
-          <span>Search</span>
+          <span>חיפוש</span>
           <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="Dance, coding, Maya..."
+            defaultValue={getFilterValue(filters.search)}
+            key={getFilterValue(filters.search)}
+            onChange={(event) => updateSearch(event.target.value)}
+            placeholder="ריקוד, רובוטיקה, יעל..."
             type="search"
           />
         </label>
 
         <label className="filter-field">
-          <span>Genre</span>
-          <select value={genre} onChange={(event) => setGenre(event.target.value)}>
-            <option>All</option>
-            {genres.map((value) => (
-              <option key={value}>{value}</option>
+          <span>תחום</span>
+          <select
+            value={filters.genre ?? "all"}
+            onChange={(event) => updateFilter("genre", event.target.value)}
+          >
+            <option value="all">הכל</option>
+            {facets.genres.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
             ))}
           </select>
         </label>
 
         <label className="filter-field">
-          <span>Location</span>
-          <select value={location} onChange={(event) => setLocation(event.target.value)}>
-            <option>All</option>
-            {locations.map((value) => (
-              <option key={value}>{value}</option>
+          <span>מיקום</span>
+          <select
+            value={filters.location ?? "all"}
+            onChange={(event) => updateFilter("location", event.target.value)}
+          >
+            <option value="all">הכל</option>
+            {facets.locations.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
             ))}
           </select>
         </label>
 
         <label className="filter-field">
-          <span>Gender</span>
-          <select value={gender} onChange={(event) => setGender(event.target.value)}>
-            <option>All</option>
-            {genders.map((value) => (
-              <option key={value}>{value}</option>
+          <span>קבוצה</span>
+          <select
+            value={filters.gender ?? "all"}
+            onChange={(event) => updateFilter("gender", event.target.value)}
+          >
+            <option value="all">הכל</option>
+            {facets.genders.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
             ))}
           </select>
         </label>
 
         <label className="filter-field compact-field">
-          <span>Age</span>
+          <span>גיל</span>
           <input
             min="0"
-            value={age}
-            onChange={(event) => setAge(event.target.value)}
-            placeholder="10"
+            value={getFilterValue(filters.age)}
+            onChange={(event) => updateFilter("age", event.target.value)}
+            placeholder="8"
             type="number"
           />
         </label>
 
         <label className="filter-field compact-field">
-          <span>Max price</span>
+          <span>מחיר עד</span>
           <input
             min="0"
-            value={maxPrice}
-            onChange={(event) => setMaxPrice(event.target.value)}
-            placeholder="80"
+            value={getFilterValue(filters.maxPrice)}
+            onChange={(event) => updateFilter("maxPrice", event.target.value)}
+            placeholder="250"
             type="number"
           />
         </label>
 
-        <button className="reset-button" type="button" onClick={resetFilters}>
-          Reset
-        </button>
+        <Link className="reset-button" href={pathname}>
+          איפוס
+        </Link>
       </div>
 
       <div className="result-row">
         <p>
-          Showing <strong>{filteredActivities.length}</strong> of{" "}
-          <strong>{activities.length}</strong> activities
+          מוצגות <strong>{activities.length}</strong> מתוך <strong>{total}</strong> פעילויות
+        </p>
+        <p>
+          עמוד <strong>{filters.page}</strong> מתוך <strong>{totalPages}</strong>
         </p>
       </div>
 
-      {filteredActivities.length > 0 ? (
-        <div className="activity-grid">
-          {filteredActivities.map((activity) => (
-            <article className="activity-card" key={activity.id}>
-              <div className="activity-image-wrap">
-                <Image
-                  src={activity.image}
-                  alt=""
-                  className="activity-image"
-                  fill
-                  sizes="(max-width: 760px) 100vw, (max-width: 1180px) 50vw, 33vw"
-                />
-                <span className="genre-chip">{activity.genre}</span>
-              </div>
-              <div className="activity-body">
-                <div className="activity-heading">
-                  <h2>{activity.name}</h2>
-                  <p>{moneyFormatter.format(activity.price)}</p>
+      {activities.length > 0 ? (
+        <>
+          <div className="activity-grid">
+            {activities.map((activity) => (
+              <article className="activity-card" key={activity.id}>
+                <div className="activity-image-wrap">
+                  <Image
+                    src={activity.image}
+                    alt=""
+                    className="activity-image"
+                    fill
+                    sizes="(max-width: 760px) 100vw, (max-width: 1180px) 50vw, 33vw"
+                  />
+                  <span className="genre-chip">{activity.genre}</span>
                 </div>
-                <dl className="activity-details">
-                  <div>
-                    <dt>Location</dt>
-                    <dd>{activity.location}</dd>
+                <div className="activity-body">
+                  <div className="activity-heading">
+                    <h2>{activity.name}</h2>
+                    <p>{moneyFormatter.format(activity.price)}</p>
                   </div>
-                  <div>
-                    <dt>Date</dt>
-                    <dd>{dateFormatter.format(new Date(`${activity.date}T12:00:00`))}</dd>
-                  </div>
-                  <div>
-                    <dt>Instructor</dt>
-                    <dd>{activity.instructor}</dd>
-                  </div>
-                  <div>
-                    <dt>Ages</dt>
-                    <dd>
-                      {activity.minAge}-{activity.maxAge}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt>Gender</dt>
-                    <dd>{activity.gender}</dd>
-                  </div>
-                </dl>
-              </div>
-            </article>
-          ))}
-        </div>
+                  <dl className="activity-details">
+                    <div>
+                      <dt>מיקום</dt>
+                      <dd>{activity.location}</dd>
+                    </div>
+                    <div>
+                      <dt>תאריך</dt>
+                      <dd>{dateFormatter.format(new Date(`${activity.date}T12:00:00`))}</dd>
+                    </div>
+                    <div>
+                      <dt>מדריך/ה</dt>
+                      <dd>{activity.instructor}</dd>
+                    </div>
+                    <div>
+                      <dt>גילאים</dt>
+                      <dd>
+                        {activity.minAge}-{activity.maxAge}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>קבוצה</dt>
+                      <dd>{activity.gender}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {totalPages > 1 ? (
+            <nav className="pagination" aria-label="עמודי פעילויות">
+              <Link
+                aria-disabled={filters.page <= 1}
+                className={filters.page <= 1 ? "page-link disabled" : "page-link"}
+                href={createQuery({ page: String(Math.max(1, filters.page - 1)) })}
+              >
+                הקודם
+              </Link>
+              {pagination.map((page) => (
+                <Link
+                  aria-current={page === filters.page ? "page" : undefined}
+                  className={page === filters.page ? "page-link current" : "page-link"}
+                  href={createQuery({ page: String(page) })}
+                  key={page}
+                >
+                  {page}
+                </Link>
+              ))}
+              <Link
+                aria-disabled={filters.page >= totalPages}
+                className={filters.page >= totalPages ? "page-link disabled" : "page-link"}
+                href={createQuery({ page: String(Math.min(totalPages, filters.page + 1)) })}
+              >
+                הבא
+              </Link>
+            </nav>
+          ) : null}
+        </>
       ) : (
         <div className="empty-state">
-          <h2>No activities match these filters.</h2>
-          <p>Try widening the age range, location, or budget.</p>
-          <button type="button" onClick={resetFilters}>
-            Clear filters
-          </button>
+          <h2>לא נמצאו פעילויות למסננים שבחרת.</h2>
+          <p>אפשר להרחיב גיל, מיקום או תקציב ולנסות שוב.</p>
+          <Link href={pathname}>ניקוי מסננים</Link>
         </div>
       )}
     </section>
