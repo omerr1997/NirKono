@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useTransition, type FormEvent } from "react";
+import { useMemo, useRef, useTransition } from "react";
 import type { Activity, ActivityFacets, ActivityFilters } from "../lib/activities";
 
 type ActivityCatalogueProps = {
@@ -41,6 +41,7 @@ export function ActivityCatalogue({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
+  const debouncedTimeout = useRef<number | null>(null);
 
   function createQuery(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -61,29 +62,20 @@ export function ActivityCatalogue({
     return query ? `${pathname}?${query}` : pathname;
   }
 
-  function updateFilters(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function pushFilter(updates: Record<string, string>) {
+    startTransition(() => {
+      router.push(createQuery(updates));
+    });
+  }
 
-    const formData = new FormData(event.currentTarget);
-    const params = new URLSearchParams(searchParams.toString());
-
-    for (const key of ["q", "genre", "location", "gender", "age", "maxPrice"]) {
-      const value = String(formData.get(key) ?? "").trim();
-
-      if (value === "" || value === "all") {
-        params.delete(key);
-      } else {
-        params.set(key, value);
-      }
+  function updateDebounced(key: string, value: string) {
+    if (debouncedTimeout.current) {
+      window.clearTimeout(debouncedTimeout.current);
     }
 
-    params.delete("page");
-    const query = params.toString();
-    const href = query ? `${pathname}?${query}` : pathname;
-
-    startTransition(() => {
-      router.push(href);
-    });
+    debouncedTimeout.current = window.setTimeout(() => {
+      pushFilter({ [key]: value.trim() });
+    }, 500);
   }
 
   const pagination = useMemo(() => {
@@ -96,18 +88,18 @@ export function ActivityCatalogue({
 
   return (
     <section className="catalogue" aria-label="קטלוג פעילויות">
-      <form
+      <div
         className="filters"
         aria-label="מסנני פעילויות"
         aria-busy={isPending}
         key={currentQuery || "all-filters"}
-        onSubmit={updateFilters}
       >
         <label className="filter-field filter-field-wide">
           <span>חיפוש</span>
           <input
             defaultValue={getFilterValue(filters.search)}
             name="q"
+            onChange={(event) => updateDebounced("q", event.target.value)}
             placeholder="ריקוד, רובוטיקה, יעל..."
             type="search"
           />
@@ -115,7 +107,11 @@ export function ActivityCatalogue({
 
         <label className="filter-field">
           <span>תחום</span>
-          <select defaultValue={filters.genre ?? "all"} name="genre">
+          <select
+            defaultValue={filters.genre ?? "all"}
+            name="genre"
+            onChange={(event) => pushFilter({ genre: event.target.value })}
+          >
             <option value="all">הכל</option>
             {facets.genres.map((value) => (
               <option key={value} value={value}>
@@ -127,7 +123,11 @@ export function ActivityCatalogue({
 
         <label className="filter-field">
           <span>מיקום</span>
-          <select defaultValue={filters.location ?? "all"} name="location">
+          <select
+            defaultValue={filters.location ?? "all"}
+            name="location"
+            onChange={(event) => pushFilter({ location: event.target.value })}
+          >
             <option value="all">הכל</option>
             {facets.locations.map((value) => (
               <option key={value} value={value}>
@@ -139,7 +139,11 @@ export function ActivityCatalogue({
 
         <label className="filter-field">
           <span>קבוצה</span>
-          <select defaultValue={filters.gender ?? "all"} name="gender">
+          <select
+            defaultValue={filters.gender ?? "all"}
+            name="gender"
+            onChange={(event) => pushFilter({ gender: event.target.value })}
+          >
             <option value="all">הכל</option>
             {facets.genders.map((value) => (
               <option key={value} value={value}>
@@ -155,6 +159,7 @@ export function ActivityCatalogue({
             defaultValue={getFilterValue(filters.age)}
             min="0"
             name="age"
+            onChange={(event) => updateDebounced("age", event.target.value)}
             placeholder="8"
             type="number"
           />
@@ -166,19 +171,16 @@ export function ActivityCatalogue({
             defaultValue={getFilterValue(filters.maxPrice)}
             min="0"
             name="maxPrice"
+            onChange={(event) => updateDebounced("maxPrice", event.target.value)}
             placeholder="250"
             type="number"
           />
         </label>
 
-        <button className="apply-button" type="submit">
-          סינון
-        </button>
-
         <Link className="reset-button" href={pathname}>
           איפוס
         </Link>
-      </form>
+      </div>
 
       <div className="result-row">
         <p>
