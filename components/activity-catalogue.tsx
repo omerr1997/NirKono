@@ -75,7 +75,7 @@ export function ActivityCatalogue({
 
     debouncedTimeout.current = window.setTimeout(() => {
       pushFilter({ [key]: value.trim() });
-    }, 500);
+    }, 250);
   }
 
   const pagination = useMemo(() => {
