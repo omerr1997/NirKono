@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useRef, useTransition } from "react";
+import { useMemo, useTransition, type FormEvent } from "react";
 import type { Activity, ActivityFacets, ActivityFilters } from "../lib/activities";
 
 type ActivityCatalogueProps = {
@@ -41,7 +41,6 @@ export function ActivityCatalogue({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const searchTimeout = useRef<number | null>(null);
 
   function createQuery(updates: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -62,20 +61,29 @@ export function ActivityCatalogue({
     return query ? `${pathname}?${query}` : pathname;
   }
 
-  function updateFilter(key: string, value: string) {
-    startTransition(() => {
-      router.push(createQuery({ [key]: value }));
-    });
-  }
+  function updateFilters(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-  function updateSearch(value: string) {
-    if (searchTimeout.current) {
-      window.clearTimeout(searchTimeout.current);
+    const formData = new FormData(event.currentTarget);
+    const params = new URLSearchParams(searchParams.toString());
+
+    for (const key of ["q", "genre", "location", "gender", "age", "maxPrice"]) {
+      const value = String(formData.get(key) ?? "").trim();
+
+      if (value === "" || value === "all") {
+        params.delete(key);
+      } else {
+        params.set(key, value);
+      }
     }
 
-    searchTimeout.current = window.setTimeout(() => {
-      updateFilter("q", value);
-    }, 350);
+    params.delete("page");
+    const query = params.toString();
+    const href = query ? `${pathname}?${query}` : pathname;
+
+    startTransition(() => {
+      router.push(href);
+    });
   }
 
   const pagination = useMemo(() => {
@@ -88,13 +96,18 @@ export function ActivityCatalogue({
 
   return (
     <section className="catalogue" aria-label="קטלוג פעילויות">
-      <div className="filters" aria-label="מסנני פעילויות" aria-busy={isPending}>
+      <form
+        className="filters"
+        aria-label="מסנני פעילויות"
+        aria-busy={isPending}
+        key={currentQuery || "all-filters"}
+        onSubmit={updateFilters}
+      >
         <label className="filter-field filter-field-wide">
           <span>חיפוש</span>
           <input
             defaultValue={getFilterValue(filters.search)}
-            key={getFilterValue(filters.search)}
-            onChange={(event) => updateSearch(event.target.value)}
+            name="q"
             placeholder="ריקוד, רובוטיקה, יעל..."
             type="search"
           />
@@ -102,10 +115,7 @@ export function ActivityCatalogue({
 
         <label className="filter-field">
           <span>תחום</span>
-          <select
-            value={filters.genre ?? "all"}
-            onChange={(event) => updateFilter("genre", event.target.value)}
-          >
+          <select defaultValue={filters.genre ?? "all"} name="genre">
             <option value="all">הכל</option>
             {facets.genres.map((value) => (
               <option key={value} value={value}>
@@ -117,10 +127,7 @@ export function ActivityCatalogue({
 
         <label className="filter-field">
           <span>מיקום</span>
-          <select
-            value={filters.location ?? "all"}
-            onChange={(event) => updateFilter("location", event.target.value)}
-          >
+          <select defaultValue={filters.location ?? "all"} name="location">
             <option value="all">הכל</option>
             {facets.locations.map((value) => (
               <option key={value} value={value}>
@@ -132,10 +139,7 @@ export function ActivityCatalogue({
 
         <label className="filter-field">
           <span>קבוצה</span>
-          <select
-            value={filters.gender ?? "all"}
-            onChange={(event) => updateFilter("gender", event.target.value)}
-          >
+          <select defaultValue={filters.gender ?? "all"} name="gender">
             <option value="all">הכל</option>
             {facets.genders.map((value) => (
               <option key={value} value={value}>
@@ -148,9 +152,9 @@ export function ActivityCatalogue({
         <label className="filter-field compact-field">
           <span>גיל</span>
           <input
+            defaultValue={getFilterValue(filters.age)}
             min="0"
-            value={getFilterValue(filters.age)}
-            onChange={(event) => updateFilter("age", event.target.value)}
+            name="age"
             placeholder="8"
             type="number"
           />
@@ -159,18 +163,22 @@ export function ActivityCatalogue({
         <label className="filter-field compact-field">
           <span>מחיר עד</span>
           <input
+            defaultValue={getFilterValue(filters.maxPrice)}
             min="0"
-            value={getFilterValue(filters.maxPrice)}
-            onChange={(event) => updateFilter("maxPrice", event.target.value)}
+            name="maxPrice"
             placeholder="250"
             type="number"
           />
         </label>
 
+        <button className="apply-button" type="submit">
+          סינון
+        </button>
+
         <Link className="reset-button" href={pathname}>
           איפוס
         </Link>
-      </div>
+      </form>
 
       <div className="result-row">
         <p>

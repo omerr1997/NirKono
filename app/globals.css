@@ -82,7 +82,7 @@ h1 {
   top: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: minmax(15rem, 2fr) repeat(3, minmax(10rem, 1fr)) repeat(2, 8rem) auto;
+  grid-template-columns: minmax(15rem, 2fr) repeat(3, minmax(10rem, 1fr)) repeat(2, 8rem) auto auto;
   gap: 0.75rem;
   align-items: end;
   border: 1px solid rgba(23, 23, 22, 0.12);
@@ -130,6 +130,7 @@ h1 {
   box-shadow: 0 0 0 3px rgba(15, 107, 98, 0.14);
 }
 
+.apply-button,
 .reset-button,
 .empty-state a {
   display: inline-flex;
@@ -146,6 +147,15 @@ h1 {
   transition:
     transform 160ms ease,
     background 160ms ease;
+}
+
+.apply-button {
+  background: #0f6b62;
+}
+
+.apply-button:hover {
+  background: #0b554e;
+  transform: translateY(-1px);
 }
 
 .reset-button:hover,
@@ -495,6 +505,10 @@ h1 {
     grid-column: 1 / -1;
   }
 
+  .apply-button {
+    grid-column: 1 / -1;
+  }
+
   .activity-grid {
     grid-template-columns: 1fr;
   }
@@ -518,6 +532,7 @@ h1 {
   }
 
   .filter-field-wide,
+  .apply-button,
   .reset-button {
     grid-column: auto;
   }
